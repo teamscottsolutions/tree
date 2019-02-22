@@ -1,7 +1,6 @@
 'use strict'
 
-const defaults = require('defaults')
-const chalk = require('chalk')
+// const defaults = require('defaults')
 
 const {
   isRegExp,
@@ -19,11 +18,12 @@ const constants = {
   FILE: 'file'
 }
 async function treeJson (path, options, myLevel) {
-  options = defaults(options, {
+  options = {
     level: 20,
     onlyDir: false,
-    showHiddenFiles: false
-  })
+    showHiddenFiles: false,
+    ...options
+  }
   if (!myLevel) {
     myLevel = 0
   }
@@ -82,56 +82,5 @@ async function treeJson (path, options, myLevel) {
   return item
 }
 
-function createTree (children, prefix, option) {
-  let tree = ''
-  const max = children.length - 1
-  children.forEach(({ type, name, children, isSymbolicLink, realPath }, index) => {
-    const isDirectory = type === constants.DIRECTORY
-    const isFile = type === constants.FILE
-    let line
-    if (name.charAt(0) === '.' && !option.showHiddenFiles) {
-      return
-    }
-    if (index === max) {
-      line = '└── ' + name + '\n'
-      if (isDirectory) {
-        tree += prefix + chalk.green(line)
-        tree += createTree(children, prefix + '    ', option)
-        return
-      }
-      if (isSymbolicLink) {
-        line = '└── ' + chalk.blue(name) + ' --> ' + chalk.blue(realPath) + '\n'
-        tree += line
-        return
-      }
-      if (isFile) {
-        tree += prefix + chalk.white(line)
-        return
-      }
-      return
-    }
-    line = '├── ' + name + '\n'
-    if (isSymbolicLink) {
-      line = '├── ' + name + chalk.green(' ──> ') + chalk.cyan(realPath) + '\n'
-      tree += prefix + chalk.cyanBright(line)
-      return
-    }
-    if (isDirectory) {
-      tree += prefix + chalk.green(line)
-      tree += createTree(children, prefix + '│   ', option)
-      return
-    }
-    tree += prefix + chalk.white(line)
-  })
-  return tree
-}
 
-async function tree (path, option) {
-  const { name, children } = await treeJson(path, option)
-  return `${chalk.green(name)}` + '\n' + createTree(children, ' ', option)
-}
-
-module.exports = {
-  treeJson,
-  tree
-}
+module.exports = { treeJson }
